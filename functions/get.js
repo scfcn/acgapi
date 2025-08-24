@@ -5,8 +5,9 @@
  * - 访问/get路径：根据设备类型自动选择
  */
 export function onRequest({ request }) {
-  // 获取请求路径
-  const path = request.url.pathname;
+  // 修正：从URL对象中获取路径
+  const url = new URL(request.url);
+  const path = url.pathname;
   
   // 定义图片目录和最大图片数量
   let imageDir, maxImages;
@@ -18,7 +19,7 @@ export function onRequest({ request }) {
   } else if (path === '/pe') {
     imageDir = 'acg_m';
     maxImages = 517;  // acg_m目录的图片数量
-  } else {
+  } else if (path === '/get') {
     // 原来的逻辑：根据设备类型选择图片集合
     const userAgent = request.headers.get('User-Agent') || '';
     const isMobile = /mobile|android|iphone|ipad|ipod|opera mini|iemobile|windows phone/i.test(userAgent);
