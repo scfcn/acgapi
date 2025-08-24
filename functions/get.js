@@ -1,19 +1,30 @@
 /**
- * 根据访问设备类型从不同图片集合中随机选择图片并进行302重定向
+ * 根据访问路径或设备类型从不同图片集合中随机选择图片并进行302重定向
+ * - 访问/pc路径：重定向到电脑端图片
+ * - 访问/pe路径：重定向到手机端图片
+ * - 其他路径：根据设备类型自动选择
  */
 export function onRequest({ request }) {
-  // 获取User-Agent头以检测设备类型
-  const userAgent = request.headers.get('User-Agent') || '';
+  // 获取请求路径
+  const path = request.url.pathname;
   
-  // 检测是否为移动设备
-  const isMobile = /mobile|android|iphone|ipad|ipod|opera mini|iemobile|windows phone/i.test(userAgent);
+  // 定义图片目录和最大图片数量
+  let imageDir, maxImages;
   
-  // 根据设备类型选择图片集合
-  const imageDir = isMobile ? 'acg_m' : 'acg_pc';
-  
-  // 获取指定目录中的图片数量（根据实际情况调整范围）
-  // 这里假设acg_m目录有517张图片，acg_pc目录有267张图片
-  const maxImages = isMobile ? 517 : 267;
+  // 根据路径判断使用哪个图片目录
+  if (path === '/pc') {
+    imageDir = 'acg_pc';
+    maxImages = 267;  // acg_pc目录的图片数量
+  } else if (path === '/pe') {
+    imageDir = 'acg_m';
+    maxImages = 517;  // acg_m目录的图片数量
+  } else {
+    // 原来的逻辑：根据设备类型选择图片集合
+    const userAgent = request.headers.get('User-Agent') || '';
+    const isMobile = /mobile|android|iphone|ipad|ipod|opera mini|iemobile|windows phone/i.test(userAgent);
+    imageDir = isMobile ? 'acg_m' : 'acg_pc';
+    maxImages = isMobile ? 517 : 267;
+  }
   
   // 生成随机图片索引（1-based）
   const randomIndex = Math.floor(Math.random() * maxImages) + 1;
