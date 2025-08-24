@@ -11,7 +11,7 @@ export function onRequest({ request }) {
   let imageDir, maxImages;
   
   // 根据路径判断使用哪个图片目录
-if (path === '/get') {
+  if (path === '/get' || path === '/get/') {
     // 原来的逻辑：根据设备类型选择图片集合
     const userAgent = request.headers.get('User-Agent') || '';
     const isMobile = /mobile|android|iphone|ipad|ipod|opera mini|iemobile|windows phone/i.test(userAgent);
