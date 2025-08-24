@@ -17,8 +17,8 @@
   </a>
 </p>
 <p align="center">🎮 在线演示：
-  <a href="https://cover.ruom.top" target="_blank">
-  https://cover.ruom.top
+  <a href="https://acg.qxzhan.cn" target="_blank">
+  https://acg.qxzhan.cn
   </a>
 </p>
 
