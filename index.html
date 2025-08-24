@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>青序栈图片API - 获取高质量二次元图片</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <!-- 引入Tailwind CSS -->
+    <script src="./js/tailwindcss.js"></script>
+    <!-- 配置天蓝色主题 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E88E5', // 天蓝色主色调
+                        secondary: '#64B5F6', // 天蓝色辅助色
+                        light: '#E3F2FD', // 天蓝色浅色
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .transition-transform {
+                transition-property: transform;
+                transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+                transition-duration: 150ms;
+            }
+        }
+    </style>
+</head>
+<body class="bg-light min-h-screen font-sans">
+    <!-- 导航栏 -->
+    <header class="bg-primary text-white shadow-md fixed w-full top-0 z-50 transition-all duration-300 ease-in-out">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"></path>
+                </svg>
+                <h1 class="text-xl font-bold tracking-tight text-shadow">ACG图片API</h1>
+            </div>
+            <nav class="hidden md:flex space-x-6">
+                <a href="#features" class="hover:text-secondary transition-colors duration-200">功能</a>
+                <a href="#demo" class="hover:text-secondary transition-colors duration-200">演示</a>
+                <a href="#usage" class="hover:text-secondary transition-colors duration-200">使用方法</a>
+            </nav>
+            <button class="md:hidden text-white focus:outline-none" id="menu-toggle">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+        </div>
+        <!-- 移动端菜单 -->
+        <div class="md:hidden hidden bg-primary/95 absolute w-full" id="mobile-menu">
+            <div class="container mx-auto px-4 py-3 flex flex-col space-y-3">
+                <a href="#features" class="hover:text-secondary transition-colors duration-200 py-2 border-b border-primary/30">功能</a>
+                <a href="#demo" class="hover:text-secondary transition-colors duration-200 py-2 border-b border-primary/30">演示</a>
+                <a href="#usage" class="hover:text-secondary transition-colors duration-200 py-2">使用方法</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主要内容 -->
+    <main class="container mx-auto px-4 pt-24 pb-16">
+        <!-- 英雄区域 -->
+        <section class="py-12 md:py-20 text-center">
+            <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold text-primary mb-6 text-shadow leading-tight">
+                随机图片API
+            </h1>
+            <p class="text-lg md:text-xl text-gray-700 max-w-3xl mx-auto mb-10">
+                一个简单易用的API，根据设备类型或指定路径，从高质量ACG图片库中随机返回精美图片。支持电脑端和移动端图片资源。
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4 mb-12">
+                <a href="#demo" class="bg-primary hover:bg-primary/90 text-white font-semibold py-3 px-8 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                    立即体验
+                </a>
+                <a href="#usage" class="bg-white hover:bg-gray-50 text-primary font-semibold py-3 px-8 rounded-lg border border-primary shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                    使用文档
+                </a>
+            </div>
+            <div class="relative w-full max-w-3xl mx-auto rounded-xl overflow-hidden shadow-2xl border-4 border-white">
+                <img src="/get" alt="ACG图片示例" class="w-full h-auto object-cover transition-transform duration-500 hover:scale-105">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-end">
+                    <div class="p-6 text-white text-left">
+                        <p class="text-lg font-medium mb-1">高质量ACG图片资源</p>
+                        <p class="text-sm opacity-90">超过780+张精选图片，持续更新中</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 功能特性 -->
+        <section id="features" class="py-16 md:py-24">
+            <h2 class="text-3xl font-bold text-center text-gray-800 mb-16">核心功能</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                <!-- 功能1 -->
+                <div class="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border-t-4 border-primary">
+                    <div class="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mb-6 text-primary">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4 text-gray-800">设备智能识别</h3>
+                    <p class="text-gray-600">自动检测访问设备类型，智能返回适合电脑端或移动端的图片资源，提供最佳视觉体验。</p>
+                </div>
+                <!-- 功能2 -->
+                <div class="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border-t-4 border-primary">
+                    <div class="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mb-6 text-primary">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4 text-gray-800">灵活路径访问</h3>
+                    <p class="text-gray-600">支持多种路径访问方式，可通过指定路径强制获取电脑端或移动端图片，满足不同场景需求。</p>
+                </div>
+                <!-- 功能3 -->
+                <div class="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border-t-4 border-primary">
+                    <div class="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mb-6 text-primary">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4 text-gray-800">快速302重定向</h3>
+                    <p class="text-gray-600">使用302重定向技术，快速返回图片资源，减少服务器负载，提高访问速度和用户体验。</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 演示区域 -->
+        <section id="demo" class="py-16 md:py-24 bg-gradient-to-b from-light to-white">
+            <h2 class="text-3xl font-bold text-center text-gray-800 mb-6">在线演示</h2>
+            <p class="text-center text-gray-600 max-w-2xl mx-auto mb-12">点击下方按钮，体验随机ACG图片API的效果</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                <button id="btn-auto" class="bg-primary hover:bg-primary/90 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 flex flex-col items-center justify-center h-32">
+                    <svg class="w-10 h-10 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    自动识别设备
+                </button>
+                <button id="btn-pc" class="bg-white hover:bg-gray-50 text-primary font-semibold py-3 px-6 rounded-lg border border-primary shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 flex flex-col items-center justify-center h-32">
+                    <svg class="w-10 h-10 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                    </svg>
+                    电脑端图片
+                </button>
+                <button id="btn-mobile" class="bg-white hover:bg-gray-50 text-primary font-semibold py-3 px-6 rounded-lg border border-primary shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 flex flex-col items-center justify-center h-32">
+                    <svg class="w-10 h-10 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                    </svg>
+                    移动端图片
+                </button>
+            </div>
+            <div class="mt-12 max-w-4xl mx-auto bg-white p-6 rounded-xl shadow-lg overflow-hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold text-gray-800">预览效果</h3>
+                    <span id="preview-path" class="text-sm text-gray-500 bg-gray-100 py-1 px-3 rounded-full">/get</span>
+                </div>
+                <div class="relative bg-gray-100 rounded-lg overflow-hidden aspect-video flex items-center justify-center">
+                    <img id="preview-image" src="/get" alt="预览图片" class="w-full h-full object-cover transition-opacity duration-500">
+                    <div class="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                        <button id="refresh-image" class="bg-white text-primary font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-primary hover:text-white transition-colors duration-300">
+                            刷新图片
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 使用方法 -->
+        <section id="usage" class="py-16 md:py-24">
+            <h2 class="text-3xl font-bold text-center text-gray-800 mb-6">使用方法</h2>
+            <p class="text-center text-gray-600 max-w-2xl mx-auto mb-12">简单的API调用方式，快速集成到您的项目中</p>
+            <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
+                <div class="grid grid-cols-1 md:grid-cols-3 border-b md:border-b-0 md:border-r border-gray-200">
+                    <button class="usage-tab active py-4 px-6 text-center font-medium text-primary border-b-2 border-primary" data-tab="tab1">自动识别</button>
+                    <button class="usage-tab py-4 px-6 text-center font-medium text-gray-600 hover:text-primary transition-colors duration-200" data-tab="tab2">电脑端</button>
+                    <button class="usage-tab py-4 px-6 text-center font-medium text-gray-600 hover:text-primary transition-colors duration-200" data-tab="tab3">移动端</button>
+                </div>
+                <div class="p-6">
+                    <div id="tab1" class="usage-content block">
+                        <h3 class="text-xl font-semibold mb-4 text-gray-800">自动识别设备类型</h3>
+                        <p class="text-gray-600 mb-4">访问以下路径，API会自动根据设备类型返回对应的图片资源：</p>
+                        <div class="bg-gray-900 text-white p-4 rounded-lg font-mono text-sm mb-4 overflow-x-auto">
+                            https://acg.qxzhan.cn/get
+                        </div>
+                        <p class="text-gray-600 mb-4">示例代码（JavaScript）：</p>
+                        <pre class="bg-gray-900 text-white p-4 rounded-lg font-mono text-sm overflow-x-auto"><code>// 使用fetch API获取图片
+fetch('https://acg.qxzhan.cn/get')
+  .then(response => {
+    // 获取重定向后的图片URL
+    const imageUrl = response.url;
+    // 显示图片
+    document.getElementById('image').src = imageUrl;
+  })
+  .catch(error => console.error('Error:', error));</code></pre>
+                    </div>
+                    <div id="tab2" class="usage-content hidden">
+                        <h3 class="text-xl font-semibold mb-4 text-gray-800">强制获取电脑端图片</h3>
+                        <p class="text-gray-600 mb-4">访问以下路径，API会强制返回电脑端图片资源：</p>
+                        <div class="bg-gray-900 text-white p-4 rounded-lg font-mono text-sm mb-4 overflow-x-auto">
+                            https://acg.qxzhan.cn/pc
+                        </div>
+                        <p class="text-gray-600 mb-4">示例代码（JavaScript）：</p>
+                        <pre class="bg-gray-900 text-white p-4 rounded-lg font-mono text-sm overflow-x-auto"><code>// 使用fetch API获取电脑端图片
+fetch('https://acg.qxzhan.cn/pc')
+  .then(response => {
+    // 获取重定向后的图片URL
+    const imageUrl = response.url;
+    // 显示图片
+    document.getElementById('image').src = imageUrl;
+  })
+  .catch(error => console.error('Error:', error));</code></pre>
+                    </div>
+                    <div id="tab3" class="usage-content hidden">
+                        <h3 class="text-xl font-semibold mb-4 text-gray-800">强制获取移动端图片</h3>
+                        <p class="text-gray-600 mb-4">访问以下路径，API会强制返回移动端图片资源：</p>
+                        <div class="bg-gray-900 text-white p-4 rounded-lg font-mono text-sm mb-4 overflow-x-auto">
+                            https://acg.qxzhan.cn/pe
+                        </div>
+                        <p class="text-gray-600 mb-4">示例代码（JavaScript）：</p>
+                        <pre class="bg-gray-900 text-white p-4 rounded-lg font-mono text-sm overflow-x-auto"><code>// 使用fetch API获取移动端图片
+fetch('https://acg.qxzhan.cn/pe')
+  .then(response => {
+    // 获取重定向后的图片URL
+    const imageUrl = response.url;
+    // 显示图片
+    document.getElementById('image').src = imageUrl;
+  })
+  .catch(error => console.error('Error:', error));</code></pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-primary text-white py-10">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-6 md:mb-0">
+                    <div class="flex items-center space-x-2">
+                        <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"></path>
+                        </svg>
+                        <h2 class="text-xl font-bold tracking-tight">ACG图片API</h2>
+                    </div>
+                    <p class="mt-2 text-sm text-blue-100">随机获取精美动漫图片的API服务</p>
+                </div>
+                <div class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-8">
+                    <div>
+                        <h3 class="text-lg font-medium mb-2">快速链接</h3>
+                        <ul class="space-y-1 text-blue-100">
+                            <li><a href="#features" class="hover:text-white transition-colors duration-200">功能特性</a></li>
+                            <li><a href="#demo" class="hover:text-white transition-colors duration-200">在线演示</a></li>
+                            <li><a href="#usage" class="hover:text-white transition-colors duration-200">使用方法</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-medium mb-2">联系我们</h3>
+                        <ul class="space-y-1 text-blue-100">
+                            <li>邮箱：<a href="mailto:qxbk@qq.com" class="hover:text-white transition-colors duration-200">qxbk@qq.com</a></li>
+                            <li>GitHub：<a href="https://github.com/scfcn/acgapi" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors duration-200">github.com/scfcn/acgapi</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-8 pt-6 border-t border-blue-700 text-center text-sm text-blue-200">
+                <p>&copy; 2025 青序栈图片API. 保留所有权利。</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // 移动端菜单切换
+        const menuToggle = document.getElementById('menu-toggle');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        menuToggle.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    window.scrollTo({
+                        top: target.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                    // 关闭移动端菜单
+                    if (!mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                }
+            });
+        });
+
+        // 导航栏滚动效果
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            if (window.scrollY > 50) {
+                header.classList.add('py-2');
+                header.classList.remove('py-4');
+            } else {
+                header.classList.add('py-4');
+                header.classList.remove('py-2');
+            }
+        });
+
+        // 使用方法选项卡
+        const usageTabs = document.querySelectorAll('.usage-tab');
+        const usageContents = document.querySelectorAll('.usage-content');
+
+        usageTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // 移除所有活动状态
+                usageTabs.forEach(t => {
+                    t.classList.remove('active', 'text-primary', 'border-b-2', 'border-primary');
+                    t.classList.add('text-gray-600');
+                });
+                usageContents.forEach(content => {
+                    content.classList.add('hidden');
+                    content.classList.remove('block');
+                });
+
+                // 添加当前活动状态
+                tab.classList.add('active', 'text-primary', 'border-b-2', 'border-primary');
+                tab.classList.remove('text-gray-600');
+                const tabId = tab.getAttribute('data-tab');
+                document.getElementById(tabId).classList.remove('hidden');
+                document.getElementById(tabId).classList.add('block');
+            });
+        });
+
+        // 演示按钮功能
+        const btnAuto = document.getElementById('btn-auto');
+        const btnPc = document.getElementById('btn-pc');
+        const btnMobile = document.getElementById('btn-mobile');
+        const refreshImage = document.getElementById('refresh-image');
+        const previewImage = document.getElementById('preview-image');
+        const previewPath = document.getElementById('preview-path');
+
+        let currentPath = '/get';
+
+        // 从API获取图片
+        function fetchImage(path) {
+            currentPath = path;
+            previewPath.textContent = path;
+            previewImage.style.opacity = '0.5';
+
+            // 构建完整的API URL
+            const apiUrl = `${path}`;
+
+            // 发送fetch请求
+            fetch(apiUrl, {
+                method: 'GET',
+                redirect: 'follow' // 跟随重定向
+            })
+            .then(response => {
+                // 获取最终重定向后的URL
+                const imageUrl = response.url;
+                // 设置图片源
+                previewImage.src = imageUrl;
+                previewImage.style.opacity = '1';
+            })
+            .catch(error => {
+                console.error('Error fetching image:', error);
+                previewImage.src = './404.avif';
+                previewImage.style.opacity = '1';
+            });
+        }
+
+        btnAuto.addEventListener('click', () => fetchImage('/get'));
+        btnPc.addEventListener('click', () => fetchImage('/pc'));
+        btnMobile.addEventListener('click', () => fetchImage('/pe'));
+        refreshImage.addEventListener('click', () => fetchImage(currentPath));
+
+        // 初始化预览图片
+        fetchImage('/get');
+    </script>
+</body>
+</html>
