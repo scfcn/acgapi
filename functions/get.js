@@ -2,10 +2,10 @@
  * 根据访问路径或设备类型从不同图片集合中随机选择图片并进行302重定向
  * - 访问/pc路径：重定向到电脑端图片
  * - 访问/pe路径：重定向到手机端图片
- * - 访问/get路径：根据设备类型自动选择
+ * - 访问其他路径(包括/get)：根据设备类型自动选择
  */
 export function onRequest({ request }) {
-  // 修正：从URL对象中获取路径
+  // 从URL对象中获取路径
   const url = new URL(request.url);
   const path = url.pathname;
   
@@ -19,8 +19,8 @@ export function onRequest({ request }) {
   } else if (path === '/pe') {
     imageDir = 'acg_m';
     maxImages = 517;  // acg_m目录的图片数量
-  } else if (path === '/get') {
-    // 原来的逻辑：根据设备类型选择图片集合
+  } else {
+    // 默认逻辑：根据设备类型选择图片集合
     const userAgent = request.headers.get('User-Agent') || '';
     const isMobile = /mobile|android|iphone|ipad|ipod|opera mini|iemobile|windows phone/i.test(userAgent);
     imageDir = isMobile ? 'acg_m' : 'acg_pc';

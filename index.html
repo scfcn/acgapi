@@ -356,11 +356,31 @@ fetch('https://acg.qxzhan.cn/pe')
 
         let currentPath = '/get';
 
+        // 更新按钮状态样式
+        function updateButtonStates(activeButton) {
+            // 重置所有按钮样式
+            btnAuto.classList.remove('bg-primary', 'text-white');
+            btnAuto.classList.add('bg-white', 'text-primary', 'border', 'border-primary');
+
+            btnPc.classList.remove('bg-primary', 'text-white');
+            btnPc.classList.add('bg-white', 'text-primary', 'border', 'border-primary');
+
+            btnMobile.classList.remove('bg-primary', 'text-white');
+            btnMobile.classList.add('bg-white', 'text-primary', 'border', 'border-primary');
+
+            // 设置当前激活按钮样式
+            activeButton.classList.remove('bg-white', 'text-primary', 'border', 'border-primary');
+            activeButton.classList.add('bg-primary', 'text-white');
+        }
+
         // 从API获取图片
-        function fetchImage(path) {
+        function fetchImage(path, button) {
             currentPath = path;
             previewPath.textContent = path;
             previewImage.style.opacity = '0.5';
+
+            // 更新按钮状态
+            updateButtonStates(button);
 
             // 构建完整的API URL
             const apiUrl = `${path}`;
@@ -384,13 +404,21 @@ fetch('https://acg.qxzhan.cn/pe')
             });
         }
 
-        btnAuto.addEventListener('click', () => fetchImage('/get'));
-        btnPc.addEventListener('click', () => fetchImage('/pc'));
-        btnMobile.addEventListener('click', () => fetchImage('/pe'));
-        refreshImage.addEventListener('click', () => fetchImage(currentPath));
+        btnAuto.addEventListener('click', () => fetchImage('/get', btnAuto));
+        btnPc.addEventListener('click', () => fetchImage('/pc', btnPc));
+        btnMobile.addEventListener('click', () => fetchImage('/pe', btnMobile));
+        refreshImage.addEventListener('click', () => {
+            // 刷新时保持当前按钮状态
+            let activeButton;
+            if (currentPath === '/get') activeButton = btnAuto;
+            else if (currentPath === '/pc') activeButton = btnPc;
+            else activeButton = btnMobile;
+            fetchImage(currentPath, activeButton);
+        });
 
-        // 初始化预览图片
-        fetchImage('/get');
+        // 初始化预览图片和按钮状态
+        updateButtonStates(btnAuto);
+        fetchImage('/get', btnAuto);
     </script>
 </body>
 </html>
