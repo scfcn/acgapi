@@ -1,0 +1,19 @@
+{
+  "redirects": [
+    {
+      "source": "/index.html",
+      "destination": "/",
+      "statusCode": 301
+    }
+  ],
+  "caches": [
+    {
+      "source": "/acg_pc/*.png",
+      "cacheTtl": 864000
+    },
+    {
+      "source": "/acg_m/*.png",
+      "cacheTtl": 864000
+    }
+  ]
+}
