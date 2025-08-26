@@ -4,7 +4,7 @@
 export function onRequest({ request }) {
   // 选择电脑端图片集合
   const imageDir = 'acg_pc';
-  const maxImages = 267;  // acg_pc目录的图片数量
+  const maxImages = 273;  // acg_pc目录的图片数量
   
   // 生成随机图片索引
   const randomIndex = Math.floor(Math.random() * maxImages) + 1;
