@@ -16,7 +16,7 @@ export function onRequest({ request }) {
     const userAgent = request.headers.get('User-Agent') || '';
     const isMobile = /mobile|android|iphone|ipad|ipod|opera mini|iemobile|windows phone/i.test(userAgent);
     imageDir = isMobile ? 'acg_m' : 'acg_pc';
-    maxImages = isMobile ? 517 : 267;
+    maxImages = isMobile ? 517 : 273;
   }
   
   // 生成随机图片索引（1-based）
