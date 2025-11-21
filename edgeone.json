@@ -1,0 +1,35 @@
+{
+  "redirects": [
+    {
+      "source": "/index.html",
+      "destination": "/",
+      "statusCode": 301
+    }
+  ],
+  "caches": [
+    {
+      "source": "/acg_pc/*.avif",
+      "cacheTtl": 864000
+    },
+    {
+      "source": "/acg_m/*.avif",
+      "cacheTtl": 864000
+    },
+    {
+      "source": "/baisi/*.avif",
+      "cacheTtl": 864000
+    },
+    {
+      "source": "/hesi/*.png",
+      "cacheTtl": 864000
+    },
+    {
+      "source": "/jk/*.png",
+      "cacheTtl": 864000
+    },
+    {
+      "source": "/meinv/*.png",
+      "cacheTtl": 864000
+    }
+  ]
+}
