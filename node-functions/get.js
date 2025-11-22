@@ -31,7 +31,8 @@ function getEnvVar(name, defaultValue = '') {
   // 对于Node.js环境，使用process.env
   if (typeof process !== 'undefined' && process.env && process.env[name]) {
     return process.env[name];
-
+  }
+  
   // 可以添加其他环境变量获取方式
   return defaultValue;
 }
@@ -123,7 +124,7 @@ async function getImageCountFromGitHub(dirName, defaultCollections) {
   }
 }
 
-export async function onRequest({ request }) {
+async function onRequest({ request }) {
   // 修正：从URL对象中获取路径
   const url = new URL(request.url);
   const path = url.pathname;
@@ -288,3 +289,8 @@ async function getAvailableFileExtension(dirName, imageIndex) {
     return 'png';
   }
 }
+
+// CommonJS风格导出，用于Node.js环境
+module.exports = {
+  onRequest
+};
