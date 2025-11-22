@@ -1,7 +1,12 @@
 /**
  * 根据访问路径从不同图片集合中随机选择图片并进行302重定向
- * - 访问/get路径：从所有可用目录中随机选择
+ * - 访问/get路径：根据设备类型返回ACG图片
+ * - 访问/jk路径：返回JK图片
+ * - 访问/meinv路径：返回美女图片
+ * - 访问/heisi路径：返回黑丝图片
+ * - 访问/baisi路径：返回白丝图片
  * - 使用GitHub API动态获取目录中的图片数量，避免手动更新
+ * - 自动选择可用的文件格式(png或avif)，确保与实际文件一致
  */
 
 // GitHub仓库信息配置
@@ -26,7 +31,7 @@ function getEnvVar(name, defaultValue = '') {
   // 对于Node.js环境，使用process.env
   if (typeof process !== 'undefined' && process.env && process.env[name]) {
     return process.env[name];
-  }
+
   // 可以添加其他环境变量获取方式
   return defaultValue;
 }
@@ -126,27 +131,48 @@ export async function onRequest({ request }) {
   // 定义所有可用的图片目录及默认最大图片数量
   // 这些值将作为GitHub API调用失败时的备用
   const defaultCollections = [
-    { dir: 'acg_m', maxImages: 510 },
+    { dir: 'acg_m', maxImages: 1 },
     { dir: 'acg_pc', maxImages: 274 },
-    { dir: 'baisi', maxImages: 20 },
-    { dir: 'heisi', maxImages: 20 },
+    { dir: 'baisi', maxImages: 308 },
+    { dir: 'heisi', maxImages: 239 },
     { dir: 'jk', maxImages: 142 },
     { dir: 'meinv', maxImages: 138 }
   ];
   
   let selectedCollection;
+  let isACGPath = false;
   
   // 根据路径判断使用哪个图片目录
-  if (path === '/get' || path === '/get/') {
-    // 从所有可用目录中随机选择一个
-    const randomIndex = Math.floor(Math.random() * defaultCollections.length);
-    const dirName = defaultCollections[randomIndex].dir;
+  if (path === '/jk' || path === '/jk/') {
+    // 返回JK图片
+    const imageCount = await getImageCountFromGitHub('jk', defaultCollections);
+    selectedCollection = { dir: 'jk', maxImages: imageCount };
+  } else if (path === '/meinv' || path === '/meinv/') {
+    // 返回美女图片
+    const imageCount = await getImageCountFromGitHub('meinv', defaultCollections);
+    selectedCollection = { dir: 'meinv', maxImages: imageCount };
+  } else if (path === '/heisi' || path === '/heisi/') {
+    // 返回黑丝图片
+    const imageCount = await getImageCountFromGitHub('heisi', defaultCollections);
+    selectedCollection = { dir: 'heisi', maxImages: imageCount };
+  } else if (path === '/baisi' || path === '/baisi/') {
+    // 返回白丝图片
+    const imageCount = await getImageCountFromGitHub('baisi', defaultCollections);
+    selectedCollection = { dir: 'baisi', maxImages: imageCount };
+  } else if (path === '/get' || path === '/get/') {
+    // 根据设备类型返回ACG图片
+    isACGPath = true;
     
-    // 动态获取该目录的图片数量
+    // 判断设备类型
+    const userAgent = request.headers.get('User-Agent') || '';
+    const isMobile = /mobile|android|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+    
+    // 选择对应设备的图片目录
+    const dirName = isMobile ? 'acg_m' : 'acg_pc';
     const imageCount = await getImageCountFromGitHub(dirName, defaultCollections);
     selectedCollection = { dir: dirName, maxImages: imageCount };
   } else {
-    // 处理特定目录的访问路径，例如：/get/baisi, /get/heisi等
+    // 兼容旧版API路径格式 /get/{dir}
     const dirMatch = path.match(/\/get\/(\w+)/);
     if (dirMatch) {
       const requestedDir = dirMatch[1];
@@ -157,16 +183,28 @@ export async function onRequest({ request }) {
         const imageCount = await getImageCountFromGitHub(requestedDir, defaultCollections);
         selectedCollection = { dir: requestedDir, maxImages: imageCount };
       } else {
-        // 请求的目录不存在，默认从所有目录中随机选择
-        const randomIndex = Math.floor(Math.random() * defaultCollections.length);
-        const dirName = defaultCollections[randomIndex].dir;
+        // 请求的目录不存在，默认返回ACG图片
+        isACGPath = true;
+        
+        // 判断设备类型
+        const userAgent = request.headers.get('User-Agent') || '';
+        const isMobile = /mobile|android|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+        
+        // 选择对应设备的图片目录
+        const dirName = isMobile ? 'acg_m' : 'acg_pc';
         const imageCount = await getImageCountFromGitHub(dirName, defaultCollections);
         selectedCollection = { dir: dirName, maxImages: imageCount };
       }
     } else {
-      // 默认行为：从所有目录中随机选择
-      const randomIndex = Math.floor(Math.random() * defaultCollections.length);
-      const dirName = defaultCollections[randomIndex].dir;
+      // 默认行为：返回ACG图片
+      isACGPath = true;
+      
+      // 判断设备类型
+      const userAgent = request.headers.get('User-Agent') || '';
+      const isMobile = /mobile|android|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+      
+      // 选择对应设备的图片目录
+      const dirName = isMobile ? 'acg_m' : 'acg_pc';
       const imageCount = await getImageCountFromGitHub(dirName, defaultCollections);
       selectedCollection = { dir: dirName, maxImages: imageCount };
     }
@@ -175,12 +213,11 @@ export async function onRequest({ request }) {
   // 从选中的目录中生成随机图片索引（1-based）
   const imageIndex = Math.floor(Math.random() * selectedCollection.maxImages) + 1;
   
-  // 随机选择图片格式（png或avif）
-  const formats = ['png', 'avif'];
-  const randomFormat = formats[Math.floor(Math.random() * formats.length)];
+  // 为指定图片索引获取可用的文件格式
+  const fileExtension = await getAvailableFileExtension(selectedCollection.dir, imageIndex);
   
   // 格式化图片文件名（例如：pic_0001.png 或 pic_0001.avif）
-  const imageFileName = `pic_${imageIndex.toString().padStart(4, '0')}.${randomFormat}`;
+  const imageFileName = `pic_${imageIndex.toString().padStart(4, '0')}.${fileExtension}`;
   
   // 构建图片URL
   const imageUrl = `/${selectedCollection.dir}/${imageFileName}`;
@@ -193,4 +230,61 @@ export async function onRequest({ request }) {
       'Cache-Control': 'no-cache'
     }
   });
+}
+
+/**
+ * 获取指定图片索引的可用文件格式
+ * @param {string} dirName - 目录名称
+ * @param {number} imageIndex - 图片索引
+ * @returns {Promise<string>} - 可用的文件扩展名(png或avif)，优先返回avif(如果存在)
+ */
+async function getAvailableFileExtension(dirName, imageIndex) {
+  const fileNameBase = `pic_${imageIndex.toString().padStart(4, '0')}`;
+  
+  try {
+    // 构建GitHub API URL
+    const apiUrl = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${dirName}?ref=${GITHUB_CONFIG.defaultBranch}`;
+    
+    // 准备请求头
+    const headers = {
+      'Accept': 'application/vnd.github.v3+json',
+      'User-Agent': 'Cloudflare-Workers-Image-API'
+    };
+    
+    // 如果提供了token，添加到请求头
+    if (GITHUB_CONFIG.token) {
+      headers['Authorization'] = `token ${GITHUB_CONFIG.token}`;
+    }
+    
+    // 发送请求到GitHub API
+    const response = await fetch(apiUrl, { headers });
+    
+    // 检查响应状态
+    if (!response.ok) {
+      console.warn(`GitHub API请求失败: ${response.status}, 使用默认格式选择`);
+      // 失败时默认优先返回png
+      return 'png';
+    }
+    
+    // 解析响应数据
+    const files = await response.json();
+    
+    // 查找对应的文件名
+    const avifFile = files.find(file => file.name === `${fileNameBase}.avif`);
+    const pngFile = files.find(file => file.name === `${fileNameBase}.png`);
+    
+    // 优先返回avif格式（如果存在），否则返回png格式
+    if (avifFile) {
+      return 'avif';
+    } else if (pngFile) {
+      return 'png';
+    } else {
+      // 都不存在时默认返回png
+      return 'png';
+    }
+  } catch (error) {
+    console.error(`获取文件格式时出错:`, error);
+    // 发生错误时默认返回png
+    return 'png';
+  }
 }
