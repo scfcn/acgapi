@@ -22,18 +22,23 @@ const GITHUB_CONFIG = {
 
 /**
  * 从环境变量获取配置，如果不存在则返回默认值
- * 在Cloudflare Workers环境中，使用process.env可能无法工作
- * 在实际部署时，请根据您的环境调整此函数
+ * 兼容EdgeOne和Node.js环境
  */
 function getEnvVar(name, defaultValue = '') {
-  // 尝试从不同的环境变量来源获取
-  // 对于Cloudflare Workers，应该使用wrangler.toml中的变量
-  // 对于Node.js环境，使用process.env
-  if (typeof process !== 'undefined' && process.env && process.env[name]) {
-    return process.env[name];
+  try {
+    // 尝试从不同的环境变量来源获取
+    // 对于EdgeOne环境
+    if (typeof env !== 'undefined' && env[name] !== undefined) {
+      return env[name];
+    }
+    // 对于Node.js环境
+    if (typeof process !== 'undefined' && process.env && process.env[name] !== undefined) {
+      return process.env[name];
+    }
+  } catch (error) {
+    console.warn(`获取环境变量${name}时出错:`, error);
   }
   
-  // 可以添加其他环境变量获取方式
   return defaultValue;
 }
 
@@ -125,20 +130,21 @@ async function getImageCountFromGitHub(dirName, defaultCollections) {
 }
 
 async function onRequest({ request }) {
-  // 修正：从URL对象中获取路径
-  const url = new URL(request.url);
-  const path = url.pathname;
-  
-  // 定义所有可用的图片目录及默认最大图片数量
-  // 这些值将作为GitHub API调用失败时的备用
-  const defaultCollections = [
-    { dir: 'acg_m', maxImages: 1 },
-    { dir: 'acg_pc', maxImages: 274 },
-    { dir: 'baisi', maxImages: 308 },
-    { dir: 'heisi', maxImages: 239 },
-    { dir: 'jk', maxImages: 142 },
-    { dir: 'meinv', maxImages: 138 }
-  ];
+  try {
+    // 修正：从URL对象中获取路径
+    const url = new URL(request.url);
+    const path = url.pathname || '/get'; // 提供默认路径防止undefined
+    
+    // 定义所有可用的图片目录及默认最大图片数量
+    // 这些值将作为GitHub API调用失败时的备用
+    const defaultCollections = [
+      { dir: 'acg_m', maxImages: 1 },
+      { dir: 'acg_pc', maxImages: 274 },
+      { dir: 'baisi', maxImages: 308 },
+      { dir: 'heisi', maxImages: 239 },
+      { dir: 'jk', maxImages: 142 },
+      { dir: 'meinv', maxImages: 138 }
+    ];
   
   let selectedCollection;
   let isACGPath = false;
@@ -223,14 +229,28 @@ async function onRequest({ request }) {
   // 构建图片URL
   const imageUrl = `/${selectedCollection.dir}/${imageFileName}`;
   
-  // 创建302重定向响应
-  return new Response(null, {
-    status: 302,
-    headers: {
-      'Location': imageUrl,
-      'Cache-Control': 'no-cache'
-    }
-  });
+    // 创建302重定向响应
+    return new Response(null, {
+      status: 302,
+      headers: {
+        'Location': imageUrl,
+        'Cache-Control': 'no-cache'
+      }
+    });
+  } catch (error) {
+    console.error('处理请求时出错:', error);
+    // 返回500错误响应
+    return new Response(JSON.stringify({
+      error: 'Internal Server Error',
+      message: '处理请求时发生错误'
+    }), {
+      status: 500,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache'
+      }
+    });
+  }
 }
 
 /**
@@ -240,9 +260,9 @@ async function onRequest({ request }) {
  * @returns {Promise<string>} - 可用的文件扩展名(png或avif)，优先返回avif(如果存在)
  */
 async function getAvailableFileExtension(dirName, imageIndex) {
-  const fileNameBase = `pic_${imageIndex.toString().padStart(4, '0')}`;
-  
   try {
+    const fileNameBase = `pic_${imageIndex.toString().padStart(4, '0')}`;
+    
     // 构建GitHub API URL
     const apiUrl = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${dirName}?ref=${GITHUB_CONFIG.defaultBranch}`;
     
